@@ -1,5 +1,23 @@
 import numpy as np 
+import math
 
+input_txt_path = "input.txt"
+output_txt_path = "output.txt"
+matricula = "16110640"
+
+
+def set_matrices(aux, n, m, length):
+    matrix = np.zeros((length, length))
+    for i in range(n):
+        for j in range(m):
+            matrix[i][j] = aux[i][j]
+    return matrix        
+    		
+    		
+    		
+    		
+    		
+    	
 
 def set_submatrices(matrix_a, matrix_b, length):
     a11 =  np.empty([length, length], dtype="int"); a12 =  np.empty([length, length], dtype="int")
@@ -10,11 +28,12 @@ def set_submatrices(matrix_a, matrix_b, length):
     
     for i in range(length):
         for j in range(length):
+        	
             a11[i][j] = matrix_a[i][j]
-            a12[i][j] = matrix_a[i][j + length]
+            a12[i][j] = matrix_a[i][j+length]
             a21[i][j] = matrix_a[i + length][j]
             a22[i][j] = matrix_a[i + length][j + length]
-
+            
             b11[i][j] = matrix_b[i][j]
             b12[i][j] = matrix_b[i][j + length]
             b21[i][j] = matrix_b[i + length][j]
@@ -27,16 +46,14 @@ def set_submatrices(matrix_a, matrix_b, length):
 
 def set_c(c11, c12, c21, c22, length):
     C = np.empty([length*2, length*2], dtype ="int")
-    
     for i in range(length):
-        for i in range(length):
-            for j in range(length):
-                C[i][j] = c11[i][j]
-                C[i][j + length] = c12[i][j]
-                C[i + length][j] = c21[i][j]
-                C[i+length][i+length] = c22[i][j] 
+        for j in range(length):
+            C[i][j] = c11[i][j]
+            C[i][j + length] = c12[i][j]
+            C[i + length][j] = c21[i][j]
+            C[i+length][i+length] = c22[i][j] 
 
-        return C
+    return C
 
 def strassen(matrix_a, matrix_b, length):
 
@@ -56,9 +73,46 @@ def strassen(matrix_a, matrix_b, length):
     p5 = strassen(s5, s6, length/2)
     p6 = strassen(s7, s8, length/2)
     p7 = strassen(s9, s10, length/2)
-
-    print(p1, p2, p3, p4, p5, p6, p7)
+    
     c11 = np.add(np.subtract(p4, p2), np.add(p5, p6)); c12 = np.add(p1, p2); c21 = np.add(p3, p4)
     c22 = np.add(p5, np.subtract(np.subtract(p1, p3), p7))
 
     return set_c(c11, c12, c21, c22, int(length/2))  
+
+
+
+input = open(input_txt_path, 'r')
+n1, m1, n2, m2 = list(map(int, input.readline().split()))
+A = []; B = []
+
+if m1 != n2:
+	print("Erro!\nAs matrizes não são multiplicáveis.")
+	exit()
+			
+length = max(n1, m1, m2)
+length = 2 ** math.ceil(math.log2(length))
+A = []
+B = []
+
+for i in range(n1):
+    A.append(list(map(int, input.readline().split())))
+
+for i in range(n2):
+    B.append(list(map(int, input.readline().split())))	
+
+A = set_matrices(A, n1, m1, length)
+B = set_matrices(B, n2, m2, length)
+
+C = strassen(A, B, length)
+
+output = open(output_txt_path, 'w')
+output.write("{}".format(matricula))
+output.write("\n  {} {}".format(n1, m2))
+
+for i in range(n1):
+    output.write("\n ")
+    for j in range(m2):
+        output.write(" {}".format(C[i][j]))
+
+input.close
+
