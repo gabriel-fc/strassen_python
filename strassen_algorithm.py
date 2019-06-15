@@ -1,0 +1,85 @@
+import numpy as np 
+
+
+def set_submatrices(matrix_a, matrix_b, length):
+    a11 =  np.empty([length, length], dtype="int"); a12 =  np.empty([length, length], dtype="int")
+    a21 =  np.empty([length, length], dtype="int"); a22 =  np.empty([length, length], dtype="int")
+   
+    b11 =  np.empty([length, length], dtype="int"); b12 =  np.empty([length, length], dtype="int")
+    b21 =  np.empty([length, length], dtype="int"); b22 =  np.empty([length, length], dtype="int")
+    
+    for i in range(length):
+        for j in range(length):
+            a11[i][j] = matrix_a[i][j]
+            a12[i][j] = matrix_a[i][j + length]
+            a21[i][j] = matrix_a[i + length][j]
+            a22[i][j] = matrix_a[i + length][j + length]
+
+            b11[i][j] = matrix_b[i][j]
+            b12[i][j] = matrix_b[i][j + length]
+            b21[i][j] = matrix_b[i + length][j]
+            b22[i][j] = matrix_b[i + length][j + length]
+
+    return a11, a12, a21, a22, b11, b12, b21, b22
+
+
+
+
+def set_c(c11, c12, c21, c22, length):
+    C = np.empty([length*2, length*2], dtype ="int")
+    
+    for i in range(length):
+        for i in range(length):
+            for j in range(length):
+                C[i][j] = c11[i][j]
+                C[i][j + length] = c12[i][j]
+                C[i + length][j] = c21[i][j]
+                C[i+length][i+length] = c22[i][j] 
+
+        return C
+
+def strassen(matrix_a, matrix_b, length):
+
+    if length == 1:
+        return [[matrix_a[0][0] * matrix_b[0][0]]]
+    
+    (a11, a12, a21, a22, b11, b12, b21, b22) = set_submatrices(matrix_a, matrix_b, int(length/2))
+
+    s1 = np.subtract(b12, b22); s2 = np.add(a11, a12); s3 = np.add(a21, a22); s4 = np.subtract(b21, b11)
+    s5 = np.add(a11, a22); s6 = np.add(b11, b22); s7 = np.subtract(a12, a22); s8 = np.add(b21, b22)
+    s9 = np.subtract(a11, a21); s10 = np.add(b11, b12)
+
+    p1 = strassen(a11, s1, length/2)
+    p2 = strassen(s2, b22, length/2)
+    p3 = strassen(s3, b11, length/2)
+    p4 = strassen(a22, s4, length/2)
+    p5 = strassen(s5, s6, length/2)
+    p6 = strassen(s7, s8, length/2)
+    p7 = strassen(s9, s10, length/2)
+
+    print(p1, p2, p3, p4, p5, p6, p7)
+    c11 = np.add(np.subtract(p4, p2), np.add(p5, p6)); c12 = np.add(p1, p2); c21 = np.add(p3, p4)
+    c22 = np.add(p5, np.subtract(np.subtract(p1, p3), p7))
+
+    return set_c(c11, c12, c21, c22, int(length/2))  
+
+
+
+
+
+
+
+
+
+m1 = []
+m1.append([2, 0, 1, 0])
+m1.append([2, 1, 3, 0])
+m1.append([0, 0, 0, 0])
+m1.append([0, 0, 0, 0])
+m2 = []
+m2.append([1, 0, 0, 0])
+m2.append([3, -2, 0, 0])
+m2.append([2, 4, 0, 0])
+m2.append([0, 0, 0, 0])
+
+print(strassen(m1, m2, 4))
